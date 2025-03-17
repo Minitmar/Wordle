@@ -1,29 +1,34 @@
-import { KeyValue } from '../../logic/status.ts';
+import { CharStatus, CharValue, KeyValue } from '../../logic/chars.ts';
 import { Key } from './Key.tsx';
+import { use } from 'react';
+import { WordleContext } from '../../logic/state.ts';
+import { getKeyStatuses } from '../../logic/guess.ts';
+import { validKeys } from '../../logic/input.ts';
 
-type Row = { keys: KeyValue[]; columns: number };
+type Row = KeyValue[];
 
 const Rows: Row[] = [
-  { keys: ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'], columns: 10 },
-  { keys: ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'], columns: 9 },
-  {
-    keys: ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE'],
-    columns: 11,
-  },
+  ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+  ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE'],
 ];
 
 export const Keyboard = () => {
+  const state = use(WordleContext);
+
+  const keyStatuses =
+    state != null
+      ? getKeyStatuses(state.board, state.targetWord)
+      : (Object.fromEntries(
+          validKeys.map((char) => [char, 'unused'] as [CharValue, CharStatus])
+        ) as Record<KeyValue, CharStatus>);
+
   return (
-    <div className="grid grid-rows-3 justify-center justify-items-center gap-10 max-h-44 max-w-lg mx-auto">
-      {Rows.map(({ keys, columns }) => (
-        <div key={columns} className={`grid grid-cols-${columns} gap-2`}>
-          {keys.map((key) => (
-            <Key
-              key={key}
-              keyValue={key}
-              status="empty"
-              onClick={(_) => void 0}
-            />
+    <div className="grid grid-rows-3 justify-center justify-items-center gap-2 w-fit max-w-full h-fit max-h-full mx-auto p-2">
+      {Rows.map((row, index) => (
+        <div key={index} className={`grid grid-flow-col gap-2`}>
+          {row.map((key) => (
+            <Key key={key} keyValue={key} status={keyStatuses[key]} />
           ))}
         </div>
       ))}
